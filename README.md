@@ -54,6 +54,7 @@ Salesforce Change Sets and metadata deploy are non-reversible. What is done is d
 
 - If there's Batch Apex involved ALWAYS TEST SHIT IN PARTIAL.
 
+Do you have backups of absolutely fucking everything? Yes? GREAT.
 
 **GETTING READY TO DEPLOY**
 
