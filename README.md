@@ -1,45 +1,44 @@
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-|                                                                                       |
-|               *Windtastic Productions* _PRESENT_                                      |
-|                               ~~                                                      |
-|                     "SO YOU'RE GOING TO PROD"                                         |
-|                                                                                       |
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+               *Windtastic Productions* PRESENT                                      
+                              ~~                                                      
+                 "SO YOU'RE GOING TO PROD"                    
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You're going to prod. This is the culmination of months of work. You're happy, the client is expectant.
 You're going to deploy this to a live instance for all the users.
 
-THAT'S GREAT.
+**THAT'S GREAT.**
 
 Now let's make sure we don't nuke everything.
+
 Salesforce Change Sets and metadata deploy are non-reversible. What is done is done forever, and Salesforce has no backup. This is why we're writing this today. You can't just deploy Metadata for some users - it's for everybody.
 
 **SHIT YOU DO BEFORE YOU DO ANYTHING ELSE**
 - Login to Prod. Is there already a config and data, even if it's simple enough to be an amoeba sliding out from the ocean ?
-	> Nope
+	- Nope
 		Wow, a Greenfield implementation! Nice. Skip this section.
-	> Yup.
+	- Yup.
 		You're touching a system these people use to store live data and use processes.
 		Are you deploying stuff that changes existing objects, permissions or processes ?
-		> Nope
+		- Nope
 			You're not completely out of the woods but you can skip "Regression testing" from this guide
-		> Yup.
+		- Yup.
 			So you have a major deployment that can, but is not limited to:
 				- break existing workflows
 				- delete existing data
 				- impact all users.
 			Great, welcome to our guide. You can't skip anything, so go through everything. Congrats!
 
-- Get a full data export.
-	You can do this by going to Setup > Data Export and exporting EVERYTHING. This will take hours.
-		>> MAKE SURE YOU CHANGE THE ENCODING. Salesforce has some dumb rule of not defaulting to UTF-8. YOU NEED UTF-8. This is Europe, not Texas. Accents and ḍîáꞓȑîȶîꞓs exist.
-	You can also do this by using Jitterbit to Query all the relevant tables, if you so prefer. Jitterbit is like Dataloader but better. If you don't have it installed, install it now. IT IS FREE. It is great. If you tried doing a full data migration with Dataloader, you will not be helped. https://www.jitterbit.com/solutions/salesforce-integration/salesforce-data-loader/
+- Get a full UTF-8 data export.
+	- You can do this by going to Setup > Data Export and exporting EVERYTHING. This will take hours.
+    - MAKE SURE YOU CHANGE THE ENCODING. Salesforce has some dumb rule of not defaulting to UTF-8. YOU NEED UTF-8. This is Europe, not Texas. Accents and ḍîáꞓȑîȶîꞓs exist.
+    You can also do this by using Jitterbit to Query all the relevant tables, if you so prefer. Jitterbit is like Dataloader but better. If you don't have it installed, install it now. IT IS FREE. It is great. If you tried doing a full data migration with Dataloader, you will not be helped. https://www.jitterbit.com/solutions/salesforce-integration/salesforce-data-loader/
 
 - Get a full metadata backup.
-	First, go to prod and create a new Sandbox. Call it Backup010818 if it's the first of August 2018. This will be your backup in case you fucked something up.
-	If you have the technical capacity for it, download an IDE with a Salesforce plugin (IntelliJ community edition is free, and the plugin Jetforcer is free for 90 days, for example). Download the entire metadata. Yes, everything. Now that you've done that, use Git to start a new repo and commit everything. You can Use Gitkraken (https://www.gitkraken.com/) for that if you're new to git and just need to store it. Git will allow you to "save" changes but also revert anything you do. Great for panic rollbacks.
+	- First, go to prod and create a new Sandbox. Call it Backup010818 if it's the first of August 2018. This will be your backup in case you fucked something up.
+	- If you have the technical capacity for it, download an IDE with a Salesforce plugin (IntelliJ community edition is free, and the plugin Jetforcer is free for 90 days, for example). Download the entire metadata. Yes, everything. Now that you've done that, use Git to start a new repo and commit everything. You can Use Gitkraken (https://www.gitkraken.com/) for that if you're new to git and just need to store it. Git will allow you to "save" changes but also revert anything you do. Great for panic rollbacks.
 
-- Make Sure that your Change Sets contain everything, and that you ahve logged any pre- or post-install steps on the Change Set description. If you'r deploying Service Cloud, this  means your Change Set description contains:
+- Make Sure that your Change Sets contain everything, and that you have logged any pre- or post-install steps on the Change Set description. If you're deploying Service Cloud, this means your Change Set description contains:
 	"Before deploy, activate Person Accounts
 	Run tests ContactTest, AccountTest, Object__cTest when deploying
 	After deploy, activate Process Builders PB1, PB3, PB24
@@ -72,39 +71,42 @@ Being ready to deploy means that you can confidently deploy all Change Sets and 
 
 If any pre-install steps do not impact users, warn the client and carry them out now. (e.g. New feature activation that requires support involvement but is invisible to users before setup).
 
-Set Deliverability to "None". You ain't sending emails without testing.
 
 **DEPLOY**
+
 
 You have a set hour and date on which to deploy.
 The client is warned and ready.
 Change Sets are ALREADY validated.
 
+- Set Deliverability to "None". You ain't sending emails without testing.
 - You freeze all necessary users.
 - If you have that, activate the validation rule bypass on the admin user. No use fighting against that.
 - You carry out all pre-install steps that you could not do before.
 - You Deploy all Change Sets
 - You carry out all post-install steps.
 All of this is written on your Change Set description, so you have no surprises (hopefully).
-
-If workflows or process builders are preventing deployment, and you deactivate them, NOTE ALL OF THEM DOWN SOMEWHERE.
-Fix any bugs that pop up due to the client not keeping their prod in sync with their sandboxes.
+- If workflows or process builders are preventing deployment, and you deactivate them, NOTE ALL OF THEM DOWN SOMEWHERE.
+- Fix any bugs that pop up due to the client not keeping their prod in sync with their sandboxes.
 
 
 **POST-DEPLOY**
-Make sure everything looks fine, that you carried everything over.
-Deactivate the validation rule bypass.
-Go over each page, create a record and immediately delete it, etc.
-Warn their PM that deployement is done and request testing from their side.
-If you deactivated Workflows or PBs or somthing so the deployment passes, ACTIVATE THEM BACK AGAIN.
 
-> You deployed a BATCH APEX.
-	DO NOT SCHEDULE THAT THING.
-	Test it with a query that only affects some records.
-	Make sure everything is still fine.
-	Then schedule it.
+- Make sure everything looks fine, that you carried everything over.
+- Deactivate the validation rule bypass.
+- Go over each page, create a record and immediately delete it, etc.
+- Warn their PM that deployement is done and request testing from their side.
+- If you deactivated Workflows or PBs or somthing so the deployment passes, ACTIVATE THEM BACK AGAIN.
+
+IF You deployed a BATCH APEX:
+
+- DO NOT SCHEDULE THAT THING.
+- Test it with a query that only affects some records.
+- Make sure everything is still fine.
+- Then schedule it.
 
 **REGRESSION TESTING**
+
 You deployed to a live org.
 With their PM and staff helping you, carry out day to day tasks from their users on selected records. Make sure there are no adverse effects that were not identified in sandbox.
 Set Email deliverability back to "full". Test emails with their staff. CAREFULLY.
@@ -112,11 +114,13 @@ Set Email deliverability back to "full". Test emails with their staff. CAREFULLY
 Stay on alert for the next few days if critical stuff happens.
 
 **REACTIVATION**
+
 Notify PM all is well
 Unfreeze users
 go drink champagne.
 
 **REVERTING CHANGES**
+
 - Data is affected
 	You have a backup. Don't panic.
 	Identify WTF is causing data to be wrong.
